@@ -1,0 +1,9 @@
+{
+  "activeTrade": {
+    "signal": "BUY",
+    "entryPrice": 3150.75,
+    "leverage": 3,
+    "timestamp": "2025-05-08T22:40:22.202092",
+    "status": "OPEN"
+  }
+}

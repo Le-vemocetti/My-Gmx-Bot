@@ -1,0 +1,227 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+// === ReentrancyGuard from OpenZeppelin ===
+abstract contract ReentrancyGuard {
+    uint256 private constant _NOT_ENTERED = 1;
+    uint256 private constant _ENTERED = 2;
+
+    uint256 private _status;
+
+    constructor() {
+        _status = _NOT_ENTERED;
+    }
+
+    modifier nonReentrant() {
+        require(_status != _ENTERED, "ReentrancyGuard: reentrant call");
+        _status = _ENTERED;
+        _;
+        _status = _NOT_ENTERED;
+    }
+}
+
+// === Context ===
+abstract contract Context {
+    function _msgSender() internal view virtual returns (address) {
+        return msg.sender;
+    }
+}
+
+// === Pausable ===
+abstract contract Pausable is Context {
+    event Paused(address account);
+    event Unpaused(address account);
+
+    bool private _paused;
+
+    constructor() {
+        _paused = false;
+    }
+
+    function paused() public view virtual returns (bool) {
+        return _paused;
+    }
+
+    modifier whenNotPaused() {
+        require(!paused(), "Pausable: paused");
+        _;
+    }
+
+    modifier whenPaused() {
+        require(paused(), "Pausable: not paused");
+        _;
+    }
+
+    function _pause() internal virtual whenNotPaused {
+        _paused = true;
+        emit Paused(_msgSender());
+    }
+
+    function _unpause() internal virtual whenPaused {
+        _paused = false;
+        emit Unpaused(_msgSender());
+    }
+}
+
+// === Ownable ===
+abstract contract Ownable is Context {
+    address private _owner;
+
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+
+    constructor(address initialOwner) {
+        require(initialOwner != address(0), "Ownable: new owner is zero address");
+        _owner = initialOwner;
+        emit OwnershipTransferred(address(0), initialOwner);
+    }
+
+    function owner() public view virtual returns (address) {
+        return _owner;
+    }
+
+    modifier onlyOwner() {
+        require(owner() == _msgSender(), "Ownable: caller is not owner");
+        _;
+    }
+
+    function transferOwnership(address newOwner) public virtual onlyOwner {
+        require(newOwner != address(0), "Ownable: new owner is zero address");
+        emit OwnershipTransferred(_owner, newOwner);
+        _owner = newOwner;
+    }
+}
+
+// === GMX Router Interface ===
+interface IGmxRouter {
+    function increasePosition(
+        address _account,
+        address _collateralToken,
+        address _indexToken,
+        uint256 _sizeDelta,
+        bool _isLong,
+        uint256 _acceptablePrice
+    ) external payable;
+
+    function decreasePosition(
+        address _account,
+        address _collateralToken,
+        address _indexToken,
+        uint256 _collateralDelta,
+        uint256 _sizeDelta,
+        bool _isLong,
+        address _receiver
+    ) external;
+}
+
+// === AutoTraderBot Contract ===
+contract AutoTraderBot is Ownable, Pausable, ReentrancyGuard {
+    address public gmxRouter;
+    address public indexToken;
+    uint256 public leverage = 3;
+    uint256 public maxLeverage = 50;
+    uint256 public tradeAmountETH = 1 ether;
+    uint256 public tradeCount;
+    bool public hasOpenTrade;
+
+    event BotActivated();
+    event BotDeactivated();
+    event TradeExecuted(bool isLong, uint256 size, uint256 price);
+    event TradeClosed(bool isLong, uint256 size);
+    event EmergencyWithdraw(address receiver, uint256 amount);
+    event TradeSettingsUpdated(uint256 amountETH, uint256 leverage);
+
+    modifier botActive() {
+        require(!paused(), "Bot paused");
+        _;
+    }
+
+    modifier noOpenTrade() {
+        require(!hasOpenTrade, "Trade already open");
+        _;
+    }
+
+    modifier withOpenTrade() {
+        require(hasOpenTrade, "No trade open");
+        _;
+    }
+
+    constructor(address _gmxRouter, address _indexToken) Ownable(msg.sender) {
+        require(_gmxRouter != address(0), "Invalid router address");
+        require(_indexToken != address(0), "Invalid token address");
+        gmxRouter = _gmxRouter;
+        indexToken = _indexToken;
+    }
+
+    receive() external payable {}
+
+    function depositETH() external payable onlyOwner {}
+
+    function toggleBot() external onlyOwner {
+        if (paused()) {
+            _unpause();
+            emit BotActivated();
+        } else {
+            _pause();
+            emit BotDeactivated();
+        }
+    }
+
+    function emergencyWithdraw(address to) external onlyOwner nonReentrant {
+        uint256 balance = address(this).balance;
+        require(balance > 0, "No ETH to withdraw");
+
+        (bool success, ) = to.call{value: balance}("");
+        require(success, "ETH transfer failed");
+
+        emit EmergencyWithdraw(to, balance);
+    }
+
+    function setTradeSettings(uint256 _tradeAmountETH, uint256 _leverage) external onlyOwner {
+        require(_tradeAmountETH > 0 && _tradeAmountETH <= 100 ether, "Invalid amount");
+        require(_leverage >= 1 && _leverage <= maxLeverage, "Invalid leverage");
+        tradeAmountETH = _tradeAmountETH;
+        leverage = _leverage;
+        emit TradeSettingsUpdated(_tradeAmountETH, _leverage);
+    }
+
+    function executeTrade(bool isLong, uint256 acceptablePrice) external payable onlyOwner botActive noOpenTrade nonReentrant {
+        require(acceptablePrice > 0, "Price must be > 0");
+        uint256 sizeDelta = tradeAmountETH * leverage;
+        require(msg.value == tradeAmountETH, "Send exact ETH for collateral");
+
+        (bool success, ) = address(gmxRouter).call{value: msg.value}(
+            abi.encodeWithSignature(
+                "increasePosition(address,address,address,uint256,bool,uint256)",
+                address(this), address(0), indexToken, sizeDelta, isLong, acceptablePrice
+            )
+        );
+        require(success, "GMX increasePosition failed");
+
+        hasOpenTrade = true;
+        tradeCount++;
+        emit TradeExecuted(isLong, sizeDelta, acceptablePrice);
+    }
+
+    function closeTrade(bool isLong, uint256 sizeDelta) external onlyOwner botActive withOpenTrade nonReentrant {
+        (bool success, ) = address(gmxRouter).call(
+            abi.encodeWithSignature(
+                "decreasePosition(address,address,address,uint256,uint256,bool,address)",
+                address(this), address(0), indexToken, 0, sizeDelta, isLong, owner()
+            )
+        );
+        require(success, "GMX decreasePosition failed");
+
+        hasOpenTrade = false;
+        emit TradeClosed(isLong, sizeDelta);
+    }
+
+    function setGmxRouter(address _router) external onlyOwner {
+        require(_router != address(0), "Invalid router address");
+        gmxRouter = _router;
+    }
+
+    function setIndexToken(address _token) external onlyOwner {
+        require(_token != address(0), "Invalid token");
+        indexToken = _token;
+    }
+}

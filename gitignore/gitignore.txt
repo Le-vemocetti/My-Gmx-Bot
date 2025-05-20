@@ -1,0 +1,53 @@
+# === Global ===
+*.log
+*.env
+.env.local
+.env.*.local
+
+# === Node ===
+**/node_modules/
+**/dist/
+**/build/
+
+# === Frontend ===
+frontend/.next/
+frontend/out/
+frontend/.turbo/
+
+# === Backend ===
+backend/.env
+backend/*.log
+
+# === Global ===
+*.log
+*.env
+.env.local
+.env.*.local
+
+# === Node ===
+**/node_modules/
+**/dist/
+**/build/
+
+# === Frontend ===
+frontend/.next/
+frontend/out/
+frontend/.turbo/
+
+# === Backend ===
+backend/.env
+backend/*.log
+
+# === OS Specific ===
+.DS_Store
+Thumbs.db
+
+# === IDEs and Editors ===
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# === Remix IDE ===
+remix-workspace/
+remix-project/

@@ -1,0 +1,12 @@
+ABI Encoding Constructor Arguments:
+Here’s how to encode the constructor arguments:
+
+_gmxRouter: 0xB95DB5B167D75e6d04227CfFFA61069348d271F5
+
+_indexToken: 0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a
+
+The ABI encoding for these arguments would look like this:
+
+ABI-encoded Constructor Arguments:
+
+0x000000000000000000000000b95db5b167d75e6d04227cffa61069348d271f5000000000000000000000000fc5a1a6eb076a2c7ad06ed22c90d7e710e35ad0a

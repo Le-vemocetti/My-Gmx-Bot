@@ -1,0 +1,45 @@
+import React, { useState, useEffect } from 'react';
+
+export default function App() {
+  const [balance, setBalance] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetch('http://localhost:3001/api/balance')
+      .then(res => res.json())
+      .then(data => setBalance(data));
+  }, []);
+
+  const handleEnter = async () => {
+    setLoading(true);
+    const res = await fetch('http://localhost:3001/api/enter', { method: 'POST' });
+    const data = await res.json();
+    alert(data.message);
+    setLoading(false);
+  };
+
+  const handleExit = async () => {
+    setLoading(true);
+    const res = await fetch('http://localhost:3001/api/exit', { method: 'POST' });
+    const data = await res.json();
+    alert(data.message);
+    setLoading(false);
+  };
+
+  return (
+    <div className="p-4 max-w-lg mx-auto">
+      <h1 className="text-2xl font-bold mb-4">GMX Trading Bot UI</h1>
+      {balance && (
+        <p>Wallet: {balance.address}<br/>ETH: {balance.balance}</p>
+      )}
+      <div className="mt-6 space-x-4">
+        <button className="bg-green-500 text-white px-4 py-2 rounded" onClick={handleEnter} disabled={loading}>
+          Enter Trade
+        </button>
+        <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={handleExit} disabled={loading}>
+          Exit Trade
+        </button>
+      </div>
+    </div>
+  );
+}
