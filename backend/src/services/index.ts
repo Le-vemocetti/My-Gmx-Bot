@@ -3,7 +3,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import botRoutes from './routes/botRoutes';
-import { startTradingBot } from './services/tradingBot'; // 👈 Bot service
+import { startTradingBot } from './tradingBot'; // 👈 Bot service
 
 dotenv.config();
 
