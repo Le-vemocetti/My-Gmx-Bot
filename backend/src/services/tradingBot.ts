@@ -190,8 +190,8 @@ export async function startTradingBot() {
   }, 60 * 1000);
 }
 
-// Optional: run automatically if this file is executed directly
-if (require.main === module) {
+// ✅ Replace the old require.main block with this:
+if (import.meta.url === `file://${process.argv[1]}`) {
   const app = express();
   const PORT = process.env.PORT || 5000;
 
