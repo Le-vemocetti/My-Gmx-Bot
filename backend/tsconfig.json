@@ -11,18 +11,18 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
-    "allowImportingTsExtensions": true,           // ✅ NEW
+    "allowImportingTsExtensions": true,
     "skipLibCheck": true,
 
     "types": ["node"],
+
     "baseUrl": "./src",
     "paths": {
-      "@abi/*": ["abi/*"]                         // ✅ FIXED
+      "@abi/*": ["abi/*"]
     }
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src"],
   "exclude": ["node_modules", "dist"]
 }
-
 
 

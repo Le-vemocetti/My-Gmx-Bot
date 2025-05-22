@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 import * as dotenv from 'dotenv';
-import BotABI from './abi/BotABI.json';
+import BotABI from '../abi/BotABI.json' assert { type: 'json' };
 import axios from 'axios';
 import { SMA, StochasticRSI } from 'technicalindicators';
 
