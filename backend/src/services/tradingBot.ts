@@ -24,7 +24,6 @@ const provider = new ethers.JsonRpcProvider(ARBITRUM_RPC);
 const wallet = new ethers.Wallet(PRIVATE_KEY, provider);
 const botContract = new ethers.Contract(CONTRACT_ADDRESS, BotABI, wallet);
 
-const ETH_ID = "ethereum";
 const INTERVAL_HOURS = 4;
 const SMA_PERIOD = 21;
 const LEVERAGE = 3;
@@ -43,30 +42,20 @@ interface Trade {
   status: "OPEN" | "CLOSED";
 }
 
-// ✅ NEW: Fetch data from Binance API instead of CoinGecko
-async function fetchOHLC(tokenId: string): Promise<Candle[]> {
-  const symbolMap: Record<string, string> = {
-    ethereum: "ETHUSDT",
-    bitcoin: "BTCUSDT",
-  };
-
-  const binanceSymbol = symbolMap[tokenId.toLowerCase()];
-  if (!binanceSymbol) throw new Error(`Unsupported tokenId: ${tokenId}`);
+// ✅ Binance OHLC fetcher
+async function fetchOHLC(): Promise<Candle[]> {
+  const symbol = "ETHUSDT";
+  const interval = "4h";
+  const limit = 100;
 
   const res = await axios.get("https://api.binance.com/api/v3/klines", {
-    params: {
-      symbol: binanceSymbol,
-      interval: "1h",
-      limit: 120,
-    },
+    params: { symbol, interval, limit },
   });
 
-  return res.data
-    .map((kline: any[]) => ({
-      time: kline[0],
-      close: parseFloat(kline[4]),
-    }))
-    .filter((_: any, i: number) => i % INTERVAL_HOURS === 0);
+  return res.data.map((candle: any[]) => ({
+    time: candle[0],
+    close: parseFloat(candle[4]),
+  }));
 }
 
 function calculateIndicators(candles: Candle[]) {
@@ -151,7 +140,7 @@ async function manageRisk() {
   const trade = loadTrade();
   if (!trade || trade.status !== "OPEN") return;
 
-  const prices = await fetchOHLC(ETH_ID);
+  const prices = await fetchOHLC();
   const currentPrice = prices[prices.length - 1].close;
   const stopLossPrice = trade.entryPrice * 0.97;
   const takeProfitPrice = trade.entryPrice * 1.03;
@@ -178,7 +167,7 @@ async function manageRisk() {
 
 async function runBotCycle() {
   try {
-    const candles = await fetchOHLC(ETH_ID);
+    const candles = await fetchOHLC();
     const indicators = calculateIndicators(candles);
     const currentTrade = loadTrade();
 
