@@ -9,7 +9,6 @@ import { SMA, StochasticRSI } from "technicalindicators";
 
 import BotABI from "../abi/BotABI.json";
 
-// ✅ Validate env vars
 const {
   WALLET_ADDRESS,
   PRIVATE_KEY,
@@ -21,7 +20,6 @@ if (!WALLET_ADDRESS || !PRIVATE_KEY || !ARBITRUM_RPC || !CONTRACT_ADDRESS) {
   throw new Error("❌ Missing required environment variables.");
 }
 
-// ✅ Set up ethers
 const provider = new ethers.JsonRpcProvider(ARBITRUM_RPC);
 const wallet = new ethers.Wallet(PRIVATE_KEY, provider);
 const botContract = new ethers.Contract(CONTRACT_ADDRESS, BotABI, wallet);
@@ -183,21 +181,6 @@ async function runBotCycle() {
   }
 }
 
-// Server setup
-const app = express();
-const PORT = process.env.PORT || 5000;
-// Server setup
-const app = express();
-const PORT = process.env.PORT || 5000;
-
-app.get("/", (_req, res) => {
-  res.send("🟢 Trading bot is running...");
-});
-
-app.listen(PORT, () => {
-  console.log(`🚀 Bot server listening on http://localhost:${PORT}`);
-});
-
 // ✅ Exported bot starter function
 export async function startTradingBot() {
   console.log("⏱️ Starting trading bot loop...");
@@ -207,16 +190,18 @@ export async function startTradingBot() {
   }, 60 * 1000);
 }
 
-setInterval(async () => {
-  console.log("⏱️ Running scheduled market evaluation...");
-  await runBotCycle();
-}, 60 * 1000);
+// Optional: run automatically if this file is executed directly
+if (require.main === module) {
+  const app = express();
+  const PORT = process.env.PORT || 5000;
 
-app.get("/", (_req, res) => {
-  res.send("🟢 Trading bot is running...");
-});
+  app.get("/", (_req, res) => {
+    res.send("🟢 Trading bot is running...");
+  });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Bot server listening on http://localhost:${PORT}`);
-});
+  app.listen(PORT, () => {
+    console.log(`🚀 Bot server listening on http://localhost:${PORT}`);
+  });
 
+  startTradingBot();
+}
