@@ -43,13 +43,30 @@ interface Trade {
   status: "OPEN" | "CLOSED";
 }
 
+// ✅ NEW: Fetch data from Binance API instead of CoinGecko
 async function fetchOHLC(tokenId: string): Promise<Candle[]> {
-  const res = await axios.get(`https://api.coingecko.com/api/v3/coins/${tokenId}/market_chart`, {
-    params: { vs_currency: "usd", days: "5", interval: "hourly" },
+  const symbolMap: Record<string, string> = {
+    ethereum: "ETHUSDT",
+    bitcoin: "BTCUSDT",
+  };
+
+  const binanceSymbol = symbolMap[tokenId.toLowerCase()];
+  if (!binanceSymbol) throw new Error(`Unsupported tokenId: ${tokenId}`);
+
+  const res = await axios.get("https://api.binance.com/api/v3/klines", {
+    params: {
+      symbol: binanceSymbol,
+      interval: "1h",
+      limit: 120,
+    },
   });
-  return res.data.prices
-    .map((x: [number, number]) => ({ time: x[0], close: x[1] }))
-    .filter((_: Candle, i: number) => i % INTERVAL_HOURS === 0);
+
+  return res.data
+    .map((kline: any[]) => ({
+      time: kline[0],
+      close: parseFloat(kline[4]),
+    }))
+    .filter((_: any, i: number) => i % INTERVAL_HOURS === 0);
 }
 
 function calculateIndicators(candles: Candle[]) {
@@ -181,7 +198,6 @@ async function runBotCycle() {
   }
 }
 
-// ✅ Exported bot starter function
 export async function startTradingBot() {
   console.log("⏱️ Starting trading bot loop...");
   setInterval(async () => {
@@ -190,7 +206,6 @@ export async function startTradingBot() {
   }, 60 * 1000);
 }
 
-// ✅ Replace the old require.main block with this:
 if (import.meta.url === `file://${process.argv[1]}`) {
   const app = express();
   const PORT = process.env.PORT || 5000;
