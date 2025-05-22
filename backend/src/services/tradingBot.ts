@@ -186,6 +186,26 @@ async function runBotCycle() {
 // Server setup
 const app = express();
 const PORT = process.env.PORT || 5000;
+// Server setup
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+app.get("/", (_req, res) => {
+  res.send("🟢 Trading bot is running...");
+});
+
+app.listen(PORT, () => {
+  console.log(`🚀 Bot server listening on http://localhost:${PORT}`);
+});
+
+// ✅ Exported bot starter function
+export async function startTradingBot() {
+  console.log("⏱️ Starting trading bot loop...");
+  setInterval(async () => {
+    console.log("⏱️ Running scheduled market evaluation...");
+    await runBotCycle();
+  }, 60 * 1000);
+}
 
 setInterval(async () => {
   console.log("⏱️ Running scheduled market evaluation...");
