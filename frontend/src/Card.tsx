@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function Card() {
   const [balance, setBalance] = useState<{ address: string; balance: string } | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetch('http://localhost:3001/api/balance')
+    fetch('http://localhost:5000/api/balance')
       .then(res => res.json())
       .then(data => setBalance(data));
   }, []);
 
   const handleEnter = async () => {
     setLoading(true);
-    const res = await fetch('http://localhost:3001/api/enter', { method: 'POST' });
+    const res = await fetch('http://localhost:5000/api/enter', { method: 'POST' });
     const data = await res.json();
     alert(data.message);
     setLoading(false);
@@ -20,7 +20,7 @@ export default function Card() {
 
   const handleExit = async () => {
     setLoading(true);
-    const res = await fetch('http://localhost:3001/api/exit', { method: 'POST' });
+    const res = await fetch('http://localhost:5000/api/exit', { method: 'POST' });
     const data = await res.json();
     alert(data.message);
     setLoading(false);

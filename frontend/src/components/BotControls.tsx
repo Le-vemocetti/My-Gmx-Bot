@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 type Props = {
   walletAddress: string | null;
@@ -30,9 +30,7 @@ export default function BotControls({ walletAddress, loading }: Props) {
   const toggleBot = async () => {
     const action = botRunning ? 'pause' : 'resume';
     try {
-      const res = await fetch(`${API_URL}/api/bot/${action}`, {
-        method: 'POST',
-      });
+      const res = await fetch(`${API_URL}/api/bot/${action}`, { method: 'POST' });
       const data = await res.json();
       alert(data.message);
       fetchStatus();
@@ -59,29 +57,29 @@ export default function BotControls({ walletAddress, loading }: Props) {
   };
 
   return (
-    <div className="bg-white shadow-lg rounded-xl p-6">
-      <h2 className="text-xl font-bold mb-4">Bot Controls</h2>
-      <p className="mb-4 text-gray-700">{statusMessage}</p>
+    <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl p-6 max-w-md mx-auto">
+      <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100">Bot Controls</h2>
+      <p className="mb-6 text-gray-700 dark:text-gray-300">{statusMessage}</p>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         <button
           onClick={toggleBot}
           disabled={loading}
-          className={`w-full py-2 px-4 rounded-xl font-semibold transition ${
+          className={`w-full py-3 rounded-xl font-semibold transition-colors duration-200 ${
             botRunning
-              ? 'bg-yellow-500 hover:bg-yellow-600 text-white'
-              : 'bg-green-600 hover:bg-green-700 text-white'
+              ? 'bg-yellow-500 hover:bg-yellow-600 text-white disabled:bg-yellow-300 cursor-not-allowed'
+              : 'bg-green-600 hover:bg-green-700 text-white disabled:bg-green-300 cursor-not-allowed'
           }`}
         >
-          {botRunning ? 'Pause Bot' : 'Resume Bot'}
+          {loading ? (botRunning ? 'Pausing...' : 'Resuming...') : botRunning ? 'Pause Bot' : 'Resume Bot'}
         </button>
 
         <button
           onClick={forceWithdraw}
           disabled={loading || !walletAddress}
-          className="w-full py-2 px-4 rounded-xl font-semibold bg-red-600 hover:bg-red-700 text-white"
+          className="w-full py-3 rounded-xl font-semibold bg-red-600 hover:bg-red-700 text-white disabled:bg-red-300 disabled:cursor-not-allowed transition-colors duration-200"
         >
-          Emergency Withdraw
+          {loading ? 'Processing...' : 'Emergency Withdraw'}
         </button>
       </div>
     </div>
