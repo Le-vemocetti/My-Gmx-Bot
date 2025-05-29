@@ -1,4 +1,4 @@
-// routes/bot/depositRoutes.ts
+// src/controller/depositRoutes.ts
 
 import express from 'express';
 import { ethers } from 'ethers';
