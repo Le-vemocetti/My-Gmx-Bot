@@ -7,7 +7,7 @@ import { ethers } from 'ethers';
 import axios from 'axios';
 import { SMA, StochasticRSI } from 'technicalindicators';
 import BotABI from '../abi/BotABI.json' assert { type: 'json' };
-import { executeTrade as contractExecuteTrade } from '../controllers/execute-trade.js';
+import { executeTrade as contractExecuteTrade } from '../controller/execute-trade.js';
 
 const BOT_MODE = process.env.BOT_MODE || 'simulation'; // 'live' or 'simulation'
 
