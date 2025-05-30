@@ -3,7 +3,8 @@
 import express, { Request, Response } from 'express';
 import { ethers } from 'ethers';
 import dotenv from 'dotenv';
-import { handleDeposit } from '../controller/depositController';
+import { handleDeposit } from '../../controller/depositController';
+
 import {
   startBot,
   stopBot,
