@@ -1,12 +1,9 @@
-// src/controller/depositRoutes.ts
-
-import express from 'express';
+import { Request, Response } from 'express';
 import { ethers } from 'ethers';
 import dotenv from 'dotenv';
 import axios from 'axios';
 
 dotenv.config();
-const router = express.Router();
 
 const { PRIVATE_KEY, CONTRACT_ADDRESS, PROVIDER_URL } = process.env;
 
@@ -21,10 +18,9 @@ const contract = new ethers.Contract(CONTRACT_ADDRESS!, ABI, wallet);
 // Minimum $10 in ETH
 const MINIMUM_USD = 10;
 
-router.post('/deposit', async (req, res) => {
+export const handleDeposit = async (req: Request, res: Response) => {
   const { amount } = req.body;
 
-  // Validate amount
   if (!amount || isNaN(amount) || Number(amount) <= 0) {
     return res.status(400).json({
       success: false,
@@ -33,7 +29,6 @@ router.post('/deposit', async (req, res) => {
   }
 
   try {
-    // Fetch live ETH price in USD
     const response = await axios.get(
       'https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT'
     );
@@ -67,6 +62,4 @@ router.post('/deposit', async (req, res) => {
       error: err.message || err.toString(),
     });
   }
-});
-
-export default router;
+};
