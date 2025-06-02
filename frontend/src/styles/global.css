@@ -1,0 +1,6 @@
+/* src/styles/global.css */
+/*! tailwindcss v4.1.7 | MIT License | https://tailwindcss.com */
+@layer properties;
+.absolute { position: absolute; }
+.relative { position: relative; }
+/* ... (paste all your CSS content here) ... */
