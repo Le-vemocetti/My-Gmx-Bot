@@ -5,7 +5,7 @@
   "description": "GMX Trading Bot with Express API",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "dev": "tsx watch src/services/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
     "trade": "tsx src/scheduler.ts",

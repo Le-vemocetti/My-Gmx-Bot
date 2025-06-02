@@ -1,13 +1,23 @@
-import { executeTrade } from './execute-trade';
-import { calculateSMA, calculateSRSI, calculateFibLevels } from './indicators';
-import { getRecentPrices } from './price-feed';
-import { shouldCloseTrade } from './risk-manager';
+import { executeTrade } from './execute-trade.js';
+import { calculateSMA, calculateSRSI, calculateFibLevels } from './indicators.js';
+import { getRecentPrices } from './price-feed.js';
+import { shouldCloseTrade } from './risk-manager.js';
 
 let peakProfit = 0;
 let entryPrice = 0;
 let positionOpen = false;
 let isLongPosition = true;
 
+export async function simulateTrade(isLong, price) {
+  console.log(`⚙️ Simulating ${isLong ? 'LONG' : 'SHORT'} trade at $${price}`);
+
+  await executeTrade(isLong, price.toString(), '0.01');
+
+  positionOpen = true;
+  isLongPosition = isLong;
+  entryPrice = parseFloat(price);
+  peakProfit = 0;
+}
  
 export async function evaluateAndTrade() {
   const prices = await getRecentPrices();

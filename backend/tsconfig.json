@@ -15,14 +15,15 @@
     "skipLibCheck": true,
 
     "types": ["node"],
-
-    "baseUrl": "./src",
+    
+    "baseUrl": ".",
     "paths": {
-      "@abi/*": ["abi/*"]
+      "@abi/*": ["src/abi/*"]
     }
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]
 }
+
 
 

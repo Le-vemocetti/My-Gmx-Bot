@@ -5,6 +5,7 @@ import cors from 'cors';
 import botRoutes from './routes/botRoutes.js';
 import { startTradingBot } from './tradingBot.js'; // 👈 Bot service
 import depositRoutes from './routes/depositRoutes.js';
+import { router as simulationRoutes } from './routes/simulationRoutes.js';
 
 dotenv.config();
 
@@ -14,6 +15,11 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// 🧪 Only mount simulation routes in development
+if (process.env.NODE_ENV !== 'production') {
+  app.use('/simulate', simulationRoutes);
+}
 
 // API Routes
 app.use('/api/bot', botRoutes);
